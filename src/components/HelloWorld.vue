@@ -9,11 +9,12 @@
       src="https://platform.slack-edge.com/img/add_to_slack.png"
       srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"
   /></a>
+  <button @click="sendit()">hello</button>
 </template>
 
 <script>
 // const axios = require("axios");
-import { authSlackContxt } from "../slack-contxt";
+import { authSlackContxt, sendMssg } from "../slack-contxt";
 export default {
   name: "HelloWorld",
   data: function () {
@@ -24,10 +25,27 @@ export default {
   props: {
     msg: String,
   },
-  methods: {},
+  methods: {
+    sendit() {
+      sendMssg(this.webhook);
+    },
+  },
   mounted() {
-    console.log("auth", authSlackContxt());
-    // console.log("webhook", this.webhook);
+    const clientID = `${process.env.VUE_APP_SLACK_CLIENT_ID}`;
+    const clientSECRET = `${process.env.VUE_APP_SLACK_CLIENT_SECRET}`;
+    const webhookU = authSlackContxt(clientID, clientSECRET);
+    // console.log("auth", webhookU);
+    webhookU.then((res) => {
+      // console.log(res);
+      this.webhook = res;
+    });
+    console.log("webhook", this.webhook);
+  },
+  watch: {
+    webhook: function () {
+      console.log(this.webhook);
+      sendMssg(this.webhook);
+    },
   },
 };
 </script>

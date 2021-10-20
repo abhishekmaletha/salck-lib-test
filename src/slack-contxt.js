@@ -2,17 +2,11 @@
 require('dotenv').config()
 const axios = require('axios');
 
-const authSlackContxt = () => {
+const authSlackContxt = (clientID, clientSECRET) => {
     var urlParams = new URLSearchParams(window.location.search);
     var params = Object.fromEntries(urlParams.entries());
     var code = params.code;
-    //console.log(code);
     if (code) {
-        const clientID = `${process.env.VUE_APP_SLACK_CLIENT_ID}`;
-        const clientSECRET = `${process.env.VUE_APP_SLACK_CLIENT_SECRET}`;
-        // console.log('in lib ', code)
-        // console.log('in lib ', clientID)
-        // console.log('in lib ', clientSECRET)
         let webhook_url = axios
             .post(
                 "https://slack.com/api/oauth.v2.access",
@@ -29,7 +23,8 @@ const authSlackContxt = () => {
             )
             .then((res) => {
                 console.log("token data ", res.data.incoming_webhook.url);
-                return res.data;
+                // webhook_url = res.data.incoming_webhook.url;
+                return res.data.incoming_webhook.url;
             })
             .catch((e) => {
                 console.log('auth error ', e);
@@ -39,6 +34,33 @@ const authSlackContxt = () => {
         console.log("no code");
     }
 }
+
+//send mssg
+const sendMssg = (webhook) => {
+    console.log(webhook);
+    axios.post(`${webhook}`, {
+        text: 'join to attend',
+        "attachments": [
+            {
+                "text": "click to open in browser",
+                "actions": [
+                    {
+                        "name": "daily meet",
+                        "text": "Chess",
+                        "type": "button",
+                        "url": "https://meet.google.com/cka-sqrx-gyn",
+                    },
+                ]
+            }]
+    }).then(function () {
+        console.log('mssg send successfully');
+    })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
+
 module.exports = {
-    authSlackContxt
+    authSlackContxt,
+    sendMssg
 }
